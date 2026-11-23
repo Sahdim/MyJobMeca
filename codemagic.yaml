@@ -6,10 +6,6 @@ workflows:
     environment:
       xcode: latest
     scripts:
-      - name: Copier l'interface dans l'appli
-        script: |
-          rm -rf ios/web && mkdir -p ios/web
-          cp -R index.html app.js styles.css manifest.json icon-192.png icon-512.png apple-touch-icon.png fonts donnees ios/web/
       - name: Installer XcodeGen
         script: brew install xcodegen
       - name: Generer le projet
