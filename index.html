@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https: http:; manifest-src 'self'">
+  <title>Mon Job Méca</title>
+  <meta name="theme-color" content="#1C1F22">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Job Méca">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side" aria-label="Navigation">
+      <div class="brand">
+        <img src="icon-192.png" alt="" class="brand-logo">
+        <div>
+          <div class="brand-name">Mon Job Méca</div>
+          <div class="brand-sub">Recherche · Bordeaux sud</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="side-foot">
+        <div class="side-maj" id="sideMaj">—</div>
+        <button class="btn btn-ghost-dark" id="btnRefreshSide" type="button"></button>
+      </div>
+      <div class="hazard" aria-hidden="true"></div>
+    </aside>
+    <main class="main" id="main" tabindex="-1"></main>
+  </div>
+  <nav class="tabbar" id="tabbar" aria-label="Navigation"></nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="sheet-wrap" id="sheet" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
