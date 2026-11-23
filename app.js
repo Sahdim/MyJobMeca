@@ -59,7 +59,7 @@
   }
 
   async function loadData(manual) {
-    const url = (store.reglages.urlMaj || '').trim();
+    const url = (store.reglages.urlMaj || window.JOBMECA_DEFAULT_URL || '').trim();
     let res = null, err = '';
     if (url) {
       if (isApp) {
