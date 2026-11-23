@@ -119,6 +119,18 @@
     const d = new Date(s + 'T12:00:00');
     return Math.floor((Date.now() - d.getTime()) / 86400000);
   }
+  function pubInfo(o) {
+    const v = String(o.publiee || '').trim();
+    let m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
+    if (m) {
+      const j = daysSince(m[0]);
+      const txt = j <= 0 ? 'Publiée aujourd\'hui' : j === 1 ? 'Publiée hier' : j < 7 ? 'Publiée il y a ' + j + ' jours' : 'Publiée le ' + fmtDate(m[0]);
+      return { txt, nouveau: j <= 2, connue: true, jours: j };
+    }
+    m = /^(\d{4})-(\d{2})$/.exec(v);
+    if (m) return { txt: 'Publiée en ' + MOIS_L[+m[2] - 1] + ' ' + m[1], nouveau: false, connue: true, jours: 99 };
+    return { txt: 'Date de publication inconnue', nouveau: false, connue: false, jours: 999 };
+  }
   const km = v => (v === 0 || v) ? (v === 0 ? 'sur place' : v + ' km') : '';
   const prio = o => [1, 2, 3].includes(+o.prio) ? +o.prio : 3;
   const sortOffres = arr => arr.slice().sort((a, b) => prio(a) - prio(b) || (+a.km || 99) - (+b.km || 99));
@@ -222,10 +234,13 @@
     vue = v;
     render();
     $('#main').scrollTop = 0;
+    document.body.classList.remove('scrolled', 'titled');
   }
 
   function render() {
     renderNav();
+    const lab = (VUES.find(v => v[0] === vue) || [0, ''])[1];
+    $('#topTitle').textContent = vue === 'accueil' ? 'Mon Job Méca' : lab;
     const m = $('#main');
     const f = { accueil: vAccueil, offres: vOffres, marche: vMarche, suivi: vSuivi, profil: vProfil }[vue];
     m.innerHTML = '<div class="page">' + f() + '</div>';
@@ -255,17 +270,18 @@
     const xp = niveauXp(o.experience);
     const p = prio(o);
     const notesOpen = ui.openNotes[o.id] || (s && s.note);
+    const pub = pubInfo(o);
     return '<article class="card' + (['ecartee', 'refus'].includes(st) ? ' dim' : '') + '" data-offre="' + esc(o.id) + '">' +
       '<div class="card-top"><span class="prio p' + p + '">Prio ' + p + '</span><div style="min-width:0">' +
       '<h3>' + esc(o.poste) + '</h3><div class="co">' + esc(o.entreprise) + '</div>' +
-      '<div class="where">' + ic('pin') + esc(o.ville) + (km(o.km) ? ' · ' + km(o.km) : '') + '</div></div></div>' +
+      '<div class="where">' + ic('pin') + esc(o.ville) + (km(o.km) ? ' · ' + km(o.km) : '') + '</div>' +
+      '<div class="pub' + (pub.connue ? '' : ' unk') + '">' + ic('clock') + esc(pub.txt) + (pub.nouveau ? '<span class="new">Nouveau</span>' : '') + '</div></div></div>' +
       '<div class="xp ' + xp.cls + '">' + ic(xp.cls === 'ok' ? 'check' : xp.cls === 'no' ? 'x' : 'grad') +
       '<div><small>' + xp.label + '</small>' + esc(o.experience || 'Non précisée') + '</div></div>' +
       '<div class="facts">' +
       (o.contrat ? '<span class="tag">' + ic('doc') + esc(o.contrat) + '</span>' : '') +
       (o.type ? '<span class="tag">' + ic(/concession/i.test(o.type) ? 'building' : 'wrench') + esc(o.type) + '</span>' : '') +
       (o.salaire ? '<span class="tag money">' + ic('euro') + esc(o.salaire) + '</span>' : '') +
-      (o.publiee ? '<span class="tag">' + ic('clock') + 'Publiée : ' + esc(fmtDate(o.publiee)) + '</span>' : '') +
       '</div>' +
       (o.note ? '<div class="note">' + esc(o.note) + '</div>' : '') +
       statusLine(s) +
@@ -273,8 +289,8 @@
       '<div class="card-foot"><div class="foot-row">' + selectStatut('offre', o.id, st) +
       '<span class="spacer"></span>' +
       (!notesOpen ? '<button class="btn btn-quiet btn-sm" data-act="notes" data-id="' + esc(o.id) + '" title="Ajouter une note">' + ic('note') + 'Note</button>' : '') + '</div><div class="foot-row actions">' +
-      (o.lien ? '<button class="btn btn-sm" data-act="lien" data-url="' + esc(o.lien) + '">' + ic('ext') + 'Voir l\'annonce</button>' : '') +
-      '<button class="btn btn-primary btn-sm" data-act="lettre" data-kind="offre" data-id="' + esc(o.id) + '">' + ic('pen') + 'Préparer ma lettre</button>' +
+      '<button class="btn btn-primary btn-sm" data-act="postuler" data-id="' + esc(o.id) + '">' + ic('send') + 'Postuler</button>' +
+      '<button class="btn btn-sm" data-act="lettre" data-kind="offre" data-id="' + esc(o.id) + '">' + ic('pen') + 'Ma lettre</button>' +
       '</div></div></article>';
   }
 
@@ -336,7 +352,7 @@
         '</ul><div style="margin-top:8px"><button class="btn btn-sm" data-goto="suivi">' + ic('track') + 'Voir le suivi</button></div></div></div>'
         : '<div class="alert ok">' + ic('check') + '<div><b>Aucune relance en retard</b>Quand tu postules, change le statut en « Postulé » : l\'appli te rappellera de relancer au bout de 7 jours.</div></div>') +
       '<h2 class="h2">' + ic('star') + 'Tes 3 meilleures pistes<span class="sub">Triées par priorité puis distance</span></h2>' +
-      (top.length ? '<div class="grid">' + top.map(carteOffre).join('') + '</div>'
+      (top.length ? '<div class="grid">' + top.map((o, i) => i === 0 ? carteOffre(o).replace('<article class="card', '<article class="card feat') : carteOffre(o)).join('') + '</div>'
         : '<div class="empty"><b>Plus rien à traiter</b>Toutes les offres ont un statut. Regarde le marché caché pour des candidatures spontanées.</div>') +
       '<div style="margin-top:18px" class="row"><button class="btn btn-dark" data-goto="offres">' + ic('briefcase') + 'Toutes les offres (' + DATA.offres.length + ')</button>' +
       '<button class="btn" data-goto="marche">' + ic('building') + 'Marché caché (' + DATA.entreprises.length + ')</button></div>';
@@ -477,7 +493,7 @@
       '<section class="panel"><h3>Réglages</h3>' +
       '<div class="field"><label for="urlMaj">Adresse de mise à jour en ligne</label><input id="urlMaj" type="url" placeholder="https://… (laisser vide pour l\'instant)" value="' + esc(r.urlMaj) + '">' +
       '<span class="hint">Si une adresse est indiquée, l\'appli télécharge les nouvelles offres depuis internet. Sinon elle lit le fichier « donnees\\offres.json ». Tes statuts et notes ne sont jamais effacés.</span></div>' +
-      '<div class="field"><label for="theme">Apparence</label><select id="theme"><option value="auto"' + (r.theme === 'auto' ? ' selected' : '') + '>Automatique (comme Windows)</option><option value="clair"' + (r.theme === 'clair' ? ' selected' : '') + '>Clair</option><option value="sombre"' + (r.theme === 'sombre' ? ' selected' : '') + '>Sombre</option></select></div>' +
+      '<div class="field" hidden><label for="theme">Apparence</label><select id="theme"><option value="auto"' + (r.theme === 'auto' ? ' selected' : '') + '>Automatique (comme Windows)</option><option value="clair"' + (r.theme === 'clair' ? ' selected' : '') + '>Clair</option><option value="sombre"' + (r.theme === 'sombre' ? ' selected' : '') + '>Sombre</option></select></div>' +
       '<div class="row"><button class="btn" data-act="refresh">' + ic('refresh') + 'Actualiser les offres</button>' +
       (isApp ? '<button class="btn" data-act="dossier">' + ic('folder') + 'Dossier des lettres</button>' : '') +
       '<button class="btn" data-act="export">' + ic('download') + 'Sauvegarder mes données</button>' +
@@ -670,6 +686,21 @@
       e.preventDefault();
       const url = a.dataset.url;
       if (isApp) window.jobmeca.ouvrirLien(url); else window.open(url, '_blank', 'noopener');
+    } else if (act === 'postuler') {
+      const o = DATA.offres.find(x => x.id === a.dataset.id);
+      if (!o) return;
+      const s = suiviOffre(o.id);
+      const lettre = s.lettre || genererLettre('offre', o);
+      const ok = await copier(lettre);
+      if (!o.lien) { ouvrirLettre('offre', o.id); return; }
+      ui.postulEnCours = o.id;
+      if (statutOffre(o.id) === 'a_traiter') { s.statut = 'a_postuler'; s.dates = s.dates || {}; s.dates.a_postuler = today(); save(); }
+      toast((ok ? 'Lettre copiée. ' : '') + 'Sur l\'annonce : appuie sur « Postuler », ajoute ton CV' + (ok ? ' et colle ta lettre.' : '.'), 6000);
+      setTimeout(() => { if (isApp) window.jobmeca.ouvrirLien(o.lien); else window.open(o.lien, '_blank', 'noopener'); }, 350);
+    } else if (act === 'postul-oui' || act === 'postul-non') {
+      const id = a.dataset.id;
+      $('#ask').hidden = true; $('#ask').innerHTML = '';
+      if (act === 'postul-oui') { setStatut('offre', id, 'postule'); render(); }
     } else if (act === 'notes') {
       ui.openNotes[a.dataset.id] = true; render();
       const ta = document.querySelector('textarea[data-id="' + CSS.escape(a.dataset.id.replace(/^e:/, '')) + '"]'); if (ta) ta.focus();
@@ -710,6 +741,24 @@
     if (e.key === 'F5' && !sheetCtx) { e.preventDefault(); refresh(); }
   });
 
+  function demanderSiEnvoye() {
+    const id = ui.postulEnCours;
+    if (!id || document.hidden) return;
+    ui.postulEnCours = null;
+    const o = DATA.offres.find(x => x.id === id);
+    if (!o || ['postule', 'relance', 'entretien'].includes(statutOffre(id))) return;
+    const w = $('#ask');
+    w.innerHTML = '<div class="ask-card" role="dialog" aria-modal="true" aria-labelledby="askT">' +
+      '<div class="ask-ico">' + ic('send') + '</div>' +
+      '<h2 id="askT">Candidature envoyée ?</h2>' +
+      '<p>' + esc(o.poste) + '<br><b>' + esc(o.entreprise) + '</b></p>' +
+      '<button class="btn btn-primary" data-act="postul-oui" data-id="' + esc(id) + '">Oui, c\'est envoyé</button>' +
+      '<button class="btn btn-quiet" data-act="postul-non" data-id="' + esc(id) + '">Pas encore</button></div>';
+    w.hidden = false;
+  }
+  document.addEventListener('visibilitychange', () => setTimeout(demanderSiEnvoye, 400));
+  window.addEventListener('focus', () => setTimeout(demanderSiEnvoye, 400));
+
   async function refresh(btn) {
     const b = btn || $('#btnRefreshSide');
     b.classList.add('spin'); b.disabled = true;
@@ -734,6 +783,11 @@
   // ================= Démarrage =================
   async function start() {
     applyTheme();
+    const mainEl = $('#main');
+    mainEl.addEventListener('scroll', () => {
+      document.body.classList.toggle('scrolled', mainEl.scrollTop > 2);
+      document.body.classList.toggle('titled', mainEl.scrollTop > 56);
+    }, { passive: true });
     $('#btnRefreshSide').innerHTML = ic('refresh') + 'Actualiser les offres';
     $('#btnRefreshSide').addEventListener('click', () => refresh());
     await loadData(false);

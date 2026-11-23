@@ -1,5 +1,5 @@
 // Service worker : l'appli marche hors connexion, les offres sont prises en ligne en priorité
-const CACHE = 'job-meca-v1';
+const CACHE = 'job-meca-v2';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
   'fonts/anton.woff', 'fonts/fira-Regular.woff', 'fonts/fira-Italic.woff', 'fonts/fira-Medium.woff', 'fonts/fira-SemiBold.woff', 'fonts/fira-Bold.woff'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

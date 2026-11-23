@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https: http:; manifest-src 'self'">
   <title>Mon Job Méca</title>
-  <meta name="theme-color" content="#1C1F22">
+  <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -34,7 +34,9 @@
     </aside>
     <main class="main" id="main" tabindex="-1"></main>
   </div>
+  <header class="topbar" aria-hidden="true"><span id="topTitle"></span></header>
   <nav class="tabbar" id="tabbar" aria-label="Navigation"></nav>
+  <div class="ask-wrap" id="ask" hidden></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="sheet-wrap" id="sheet" hidden></div>
   <script src="app.js"></script>
