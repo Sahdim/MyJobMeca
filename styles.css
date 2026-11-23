@@ -574,3 +574,5 @@ h2.h2 svg.i { display: none; }
 }
 @keyframes up { from { transform: translateY(40px); opacity: .5; } }
 @media (prefers-reduced-motion: reduce) { .sheet, .ask-wrap, .page { animation: none; } .topbar, .topbar span { transition: none; } }
+.skills span.ok { display: inline-flex; align-items: center; gap: 6px; }
+.skills span.ok svg.i { width: 15px; height: 15px; stroke-width: 3; color: var(--green); }

@@ -479,7 +479,7 @@
       '</ul></section>' +
       '<section class="panel"><h3>Ce que je sais faire</h3><div class="skills">' +
       ['Service rapide (autonome)', 'Vidange / filtres', 'Freinage disques & plaquettes', 'Train avant', 'Distribution', 'Kit embrayage', 'Décaissage', 'Dépose moteur', 'Boîte de vitesses', 'Berceau']
-        .map((s, i) => '<span' + (i < 1 || s === 'Distribution' ? ' class="hi"' : '') + '>' + s + '</span>').join('') + '</div>' +
+        .map(s => ['Vidange / filtres', 'Freinage disques & plaquettes', 'Train avant'].includes(s) ? '<span class="hi ok">' + ic('check') + s + '</span>' : '<span>' + s + '</span>').join('') + '</div>' +
       '<p style="margin:12px 0 0;color:var(--ink-2);font-size:14px">Objectif : évoluer vers la grosse mécanique et le diagnostic. J\'apprends vite et je suis motivé.</p></section>' +
       '</div><div style="display:grid;gap:18px">' +
       '<section class="panel"><h3>Ce que je cherche</h3><div class="skills" style="margin-bottom:14px"><span class="hi">Service rapide</span><span class="hi">Débutant accepté / ~1 an</span><span>CDI ou intérim</span><span>Idéal : concession pour évoluer</span></div>' +
